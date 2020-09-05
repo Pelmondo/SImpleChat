@@ -13,6 +13,7 @@ class ProfileViewController: UIViewController {
   //MARK: - Properties
   
   lazy var profileImageView = createImageView()
+  lazy var imagePickerController = createUIIamgePickerController()
   var nameLabel: UILabel = {
     let label = UILabel()
     label.translatesAutoresizingMaskIntoConstraints = false
@@ -48,7 +49,7 @@ class ProfileViewController: UIViewController {
     button.imageView?.contentMode = .scaleAspectFit
     button.backgroundColor = .white
     button.layer.cornerRadius = 5
-    button.addTarget(self, action: #selector(editButtonTapped(_:)), for: .touchUpInside)
+    button.addTarget(self, action: #selector(imagePickerButtonTapped(_:)), for: .touchUpInside)
     return button
   }()
   
@@ -67,10 +68,20 @@ class ProfileViewController: UIViewController {
   fileprivate func createImageView() -> UIImageView {
     let image = UIImageView()
     image.translatesAutoresizingMaskIntoConstraints = false
-    image.contentMode = .scaleAspectFit
+    image.contentMode = .scaleAspectFill
+    image.clipsToBounds = true
     image.backgroundColor = .green
     image.image = #imageLiteral(resourceName: "placeholderUser")
     return image
+  }
+  
+  fileprivate func createUIIamgePickerController() -> UIImagePickerController {
+    let imagePickerController = UIImagePickerController()
+    imagePickerController.delegate = self
+    imagePickerController.allowsEditing = true
+    imagePickerController.mediaTypes = ["public.image"]
+    imagePickerController.sourceType = .photoLibrary
+    return imagePickerController
   }
   
   fileprivate func configureUI() {
@@ -112,5 +123,28 @@ class ProfileViewController: UIViewController {
   @objc func editButtonTapped(_ sender: UIButton) {
     print("TODO: in near future")
   }
+  
+  @objc func imagePickerButtonTapped(_ sender: UIButton) {
+    let alert = UIAlertController(title: "Изменить фото", message: nil, preferredStyle: .actionSheet)
+    
+    alert.addAction(UIAlertAction(title: "Галерея", style: .default, handler: { (UIAlertAction) in
+      self.present(self.imagePickerController, animated: true)
+    }))
+    
+    alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: { (UIAlertAction) in
+      print("Cancel")
+    }))
+    
+    self.present(alert, animated: true)
+  }
 }
 
+//MARK: - UIImagePickerControllerDelegate
+extension ProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+        profileImageView.image = image
+    }
+    dismiss(animated: true, completion: nil)
+  }
+}
